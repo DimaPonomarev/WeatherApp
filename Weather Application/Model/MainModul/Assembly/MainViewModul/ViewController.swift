@@ -25,37 +25,39 @@ class ViewController: UIViewController, MainViewControllerProtocol {
     var presenter: MainViewControllerPresenterProtocol?
     
     lazy var scrollView = UIScrollView()
-
+    private let contentView = UIView()
+    private let viewForTableView = UIView()
     private let upperView = UIView()
     private let cityLabel = UILabel()
-    private let imageViewOfWeatherinCurrentHour = UIImageView()
+    private let imageViewOfCurrentWeatherInUpperView = UIImageView()
     private let atmospherePressureLabel = UILabel()
     private let humidityLabel = UILabel()
-    private let degreelabel = UILabel()
+    private let degreeOfCurrentWeatherInUpperView = UILabel()
     private let feelLikeDegreeLabel = UILabel()
-    private let refreshButton = UIButton()
     private let descriptionOfWeather = UILabel()
     private let windSpeedLabel = UILabel()
-    private let searchController = UISearchController(searchResultsController: nil)
-    private let upperStackView = UIStackView()
+    private let degreeAndImageStackViewInUpperStackView = UIStackView()
     private let degreeStackView = UIStackView()
     private let descriptionStackView = UIStackView()
-    private let lastRefreshLabel = UILabel()
     private let tableView = UITableView()
-    private let nightTemperature = UILabel()
-    private let dayTemperature = UILabel()
-    private let nightDayDegreeStackView = UIStackView()
     private let forecastLabel = UILabel()
-    private let backgroundImageView = UIImageView()
-    private let nightDayUpperView = UIImageView()
+    private let nightDayImageViewInUpperView = UIImageView()
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
     private let activityIndicator = UIActivityIndicatorView()
     private let rainView = UIView()
     private let locationManager = LocationManager()
-    private let locationLabel = UILabel()
+    private let searchController = UISearchController(searchResultsController: nil)
+    private var tableViewHeighConstraint: Constraint!
+
+    
+//    MARK: - ObserverOfTableViewSize
+    
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        updateTableViewHeighConstraint(keyPath: keyPath, change: change)
+    }
     
     //MARK: - LifeCicle
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -63,6 +65,7 @@ class ViewController: UIViewController, MainViewControllerProtocol {
         makeConstraints()
         makeViews()
         setupSearchBar()
+        setupScrollView()
         setupTableView()
         setupCollectionView()
         updateSearchResults(for: searchController)
@@ -73,10 +76,26 @@ class ViewController: UIViewController, MainViewControllerProtocol {
 
 private extension ViewController {
     
-    //MARK: - setup
+//    MARK: - updateTableViewHeighConstraint
     
+    private func updateTableViewHeighConstraint(keyPath: String?, change: [NSKeyValueChangeKey : Any]?) {
+        var newHeighConstraint: CGFloat?
+        if(keyPath == "contentSize"){
+            if let newValue = change?[.newKey]
+            {
+                let newSize = newValue as! CGSize
+                newHeighConstraint = newSize.height
+                tableView.snp.updateConstraints {
+                    tableViewHeighConstraint = $0.height.equalTo(newHeighConstraint!).constraint
+                }
+                tableView.layoutIfNeeded()
+            }
+        }
+    }
+    
+    //MARK: - setup
+
     func setup() {
-        
         let assembly = Assembly()
         assembly.createViewController(view: self)
     }
@@ -84,105 +103,105 @@ private extension ViewController {
     //MARK: - addViews
     
     func addViews() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(upperView)
+        upperView.addSubview(nightDayImageViewInUpperView)
         
-        view.addSubview(upperView)
-        upperView.addSubview(locationLabel)
-        upperView.addSubview(nightDayUpperView)
         upperView.addSubview(rainView)
-        upperView.addSubview(backgroundImageView)
-        upperView.addSubview(upperStackView)
-        upperView.addSubview(degreeStackView)
-        upperView.addSubview(descriptionStackView)
-        upperView.addSubview(collectionView)
         rainView.addSubview(SKView(withEmitter: "ParticleScene"))
-        upperStackView.addArrangedSubview(degreelabel)
-        upperStackView.addArrangedSubview(imageViewOfWeatherinCurrentHour)
+        
+        degreeAndImageStackViewInUpperStackView.addArrangedSubview(degreeOfCurrentWeatherInUpperView)
+        degreeAndImageStackViewInUpperStackView.addArrangedSubview(imageViewOfCurrentWeatherInUpperView)
+        
+        upperView.addSubview(degreeStackView)
         degreeStackView.addArrangedSubview(cityLabel)
-        degreeStackView.addArrangedSubview(upperStackView)
+        degreeStackView.addArrangedSubview(degreeAndImageStackViewInUpperStackView)
         degreeStackView.addArrangedSubview(descriptionOfWeather)
         degreeStackView.addArrangedSubview(feelLikeDegreeLabel)
+        
+        upperView.addSubview(descriptionStackView)
         descriptionStackView.addArrangedSubview(windSpeedLabel)
         descriptionStackView.addArrangedSubview(humidityLabel)
         descriptionStackView.addArrangedSubview(atmospherePressureLabel)
-        upperView.addSubview(lastRefreshLabel)
-        view.addSubview(refreshButton)
-        view.addSubview(tableView)
-        view.addSubview(nightDayDegreeStackView)
-        view.addSubview(forecastLabel)
-        nightDayDegreeStackView.addArrangedSubview(dayTemperature)
-        nightDayDegreeStackView.addArrangedSubview(nightTemperature)
+        
+        upperView.addSubview(collectionView)
+        
+        contentView.addSubview(viewForTableView)
+        viewForTableView.addSubview(forecastLabel)
+        viewForTableView.addSubview(tableView)
+  
         view.addSubview(activityIndicator)
+        
     }
     
     //MARK: - makeConstraints
     
     func makeConstraints() {
-        
-        activityIndicator.snp.makeConstraints {
-            $0.center.equalToSuperview()
+        scrollView.snp.makeConstraints {
+            $0.edges.equalToSuperview()
+        }
+        contentView.snp.makeConstraints {
+            $0.top.equalTo(scrollView)
+            $0.width.equalTo(scrollView)
         }
         upperView.snp.makeConstraints {
-            $0.top.equalToSuperview().inset(-30)
-            $0.leading.trailing.equalToSuperview()
+            $0.top.equalTo(scrollView)
+            $0.leading.trailing.equalTo(contentView)
+            $0.bottom.equalTo(collectionView)
         }
-        backgroundImageView.snp.makeConstraints {
+        nightDayImageViewInUpperView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         rainView.snp.makeConstraints {
             $0.edges.equalToSuperview()
         }
         degreeStackView.snp.makeConstraints {
-            $0.top.equalTo(view.safeAreaLayoutGuide).inset(-5)
-            $0.centerX.equalToSuperview()
-            $0.leading.trailing.equalToSuperview().inset(15)
+            degreeStackView.updateConstraints()
+            $0.top.equalTo(upperView).offset(150)
+
+            $0.leading.trailing.equalTo(contentView)
         }
         descriptionStackView.snp.makeConstraints {
-            $0.top.equalTo(degreeStackView.snp.bottom).offset(20)
             $0.leading.equalToSuperview().inset(15)
-            $0.trailing.equalToSuperview().inset(200)
-        }
-        lastRefreshLabel.snp.makeConstraints {
-            $0.top.equalTo(descriptionStackView.snp.bottom).offset(10)
-            $0.leading.trailing.equalToSuperview().inset(15)
-            $0.bottom.equalToSuperview().inset(10)
-        }
-        forecastLabel.snp.makeConstraints {
-            $0.top.equalTo(upperView.snp.bottom).offset(10)
-            $0.left.equalToSuperview().offset(15)
-        }
-        nightDayDegreeStackView.snp.makeConstraints {
-            $0.top.equalTo(forecastLabel.snp.bottom)
-            $0.right.equalToSuperview().offset(3)
-            $0.width.equalToSuperview().inset(151)
-        }
-        tableView.snp.makeConstraints {
-            $0.top.equalTo(nightDayDegreeStackView.snp.bottom)
-            $0.leading.trailing.equalToSuperview()
-            $0.bottom.equalToSuperview()
+            $0.bottom.equalTo(contentView)
+            $0.centerY.equalTo(collectionView.snp.centerY)
         }
         collectionView.snp.makeConstraints {
+            $0.top.equalTo(degreeStackView.snp.bottom).offset(20)
             $0.left.equalTo(descriptionStackView.snp.right)
-            $0.right.bottom.equalToSuperview()
-            $0.top.equalTo(degreeStackView.snp.bottom)
+            $0.right.equalToSuperview()
+            $0.bottom.equalTo(contentView)
+            $0.height.equalTo(100)
         }
-        nightDayUpperView.snp.makeConstraints {
-            $0.edges.equalToSuperview()
+        viewForTableView.snp.makeConstraints {
+            $0.top.equalTo(contentView.snp.bottom)
+            $0.bottom.equalTo(scrollView.snp.bottom)
+            $0.width.equalTo(scrollView)
+        }
+        forecastLabel.snp.makeConstraints {
+            $0.top.leading.equalTo(viewForTableView)
+            $0.bottom.equalTo(tableView.snp.top)
+        }
+        tableView.snp.remakeConstraints {
+            tableViewHeighConstraint = $0.height.equalTo(200).constraint
+            $0.top.equalTo(forecastLabel.snp.bottom)
+            $0.bottom.equalTo(viewForTableView).inset(50)
+            $0.leading.trailing.equalToSuperview()
         }
     }
     
     //MARK: - makeView
     
     func makeViews() {
-        
         self.view.backgroundColor = .white
-        rainView.isHidden = true
-        
+
         upperView.backgroundColor = .systemBlue
         upperView.layer.cornerRadius = 20
         upperView.clipsToBounds = true
-        
-        backgroundImageView.contentMode = .scaleAspectFill
-        
+                
+        rainView.isHidden = true
+
         cityLabel.font = .systemFont(ofSize: 40)
         cityLabel.minimumScaleFactor = 0.1
         cityLabel.adjustsFontSizeToFitWidth = true
@@ -190,14 +209,14 @@ private extension ViewController {
         cityLabel.numberOfLines = 0
         cityLabel.textColor = .white
         
-        degreelabel.font = .systemFont(ofSize: 45)
-        degreelabel.minimumScaleFactor = 0.1
-        degreelabel.adjustsFontSizeToFitWidth = true
-        degreelabel.textAlignment = .right
-        degreelabel.numberOfLines = 0
-        degreelabel.textColor = .white
+        degreeOfCurrentWeatherInUpperView.font = .systemFont(ofSize: 40)
+        degreeOfCurrentWeatherInUpperView.minimumScaleFactor = 0.1
+        degreeOfCurrentWeatherInUpperView.adjustsFontSizeToFitWidth = true
+        degreeOfCurrentWeatherInUpperView.textAlignment = .right
+        degreeOfCurrentWeatherInUpperView.numberOfLines = 0
+        degreeOfCurrentWeatherInUpperView.textColor = .white
         
-        imageViewOfWeatherinCurrentHour.contentMode = .left
+        imageViewOfCurrentWeatherInUpperView.contentMode = .left
         
         descriptionOfWeather.font = .preferredFont(forTextStyle: .body)
         descriptionOfWeather.font = .systemFont(ofSize: 20)
@@ -217,67 +236,54 @@ private extension ViewController {
         
         windSpeedLabel.textColor = .white
         windSpeedLabel.font = .systemFont(ofSize: 15)
-        windSpeedLabel.minimumScaleFactor = 0.1
+        windSpeedLabel.minimumScaleFactor = 5
         windSpeedLabel.adjustsFontSizeToFitWidth = true
         
         humidityLabel.textColor = .white
         humidityLabel.font = .systemFont(ofSize: 15)
-        humidityLabel.minimumScaleFactor = 0.1
+        humidityLabel.minimumScaleFactor = 5
         humidityLabel.adjustsFontSizeToFitWidth = true
         
         atmospherePressureLabel.textColor = .white
         atmospherePressureLabel.font = .systemFont(ofSize: 15)
-        atmospherePressureLabel.minimumScaleFactor = 0.1
+        atmospherePressureLabel.minimumScaleFactor = 5
         atmospherePressureLabel.adjustsFontSizeToFitWidth = true
-        
-        lastRefreshLabel.textColor = .white
-        lastRefreshLabel.font = .systemFont(ofSize: 15)
-        lastRefreshLabel.minimumScaleFactor = 0.1
-        lastRefreshLabel.adjustsFontSizeToFitWidth = true
-        lastRefreshLabel.textAlignment = .center
-        
-        upperStackView.distribution = .fillEqually
+    
+        degreeAndImageStackViewInUpperStackView.distribution = .fillEqually
         
         degreeStackView.axis = .vertical
-        degreeStackView.spacing = 5
+        degreeStackView.spacing = 20
         degreeStackView.distribution = .fillProportionally
         
         descriptionStackView.axis = .vertical
-        descriptionStackView.spacing = 5
-        
-        refreshButton.setTitle("Refresh", for: .normal)
-        refreshButton.titleLabel?.font = .systemFont(ofSize: 30)
-        
-//        dayTemperature.adjustsFontSizeToFitWidth = true
-//        dayTemperature.font = .systemFont(ofSize: 20)
-//        dayTemperature.text = "День"
-//        dayTemperature.minimumScaleFactor = 0.1
-//
-//        nightTemperature.adjustsFontSizeToFitWidth = true
-//        nightTemperature.textColor = .gray
-//        nightTemperature.font = .systemFont(ofSize: 20)
-//        nightTemperature.text = "Ночь"
-//        nightTemperature.minimumScaleFactor = 0.1
-//
-//        nightDayDegreeStackView.axis = .horizontal
-//        nightDayDegreeStackView.distribution = .fillEqually
+        descriptionStackView.distribution = .fillEqually
         
         forecastLabel.text = "Прогноз на 7 Дней"
         forecastLabel.font = .boldSystemFont(ofSize: 25)
     }
     
+
+
     //MARK: - setupSearchBar
     
     func setupSearchBar() {
         navigationItem.searchController = searchController
         searchController.searchResultsUpdater = self
         searchController.searchBar.textField?.backgroundColor = .white.withAlphaComponent(0.7)
+        navigationItem.hidesSearchBarWhenScrolling = false
+    }
+    
+    //MARK: - setupScrollView
+    
+    func setupScrollView() {
+        scrollView.resignFirstResponder()
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.bounces = false
     }
     
     //MARK: - setupCollectionView
     
     func setupCollectionView() {
-        
         collectionView.backgroundColor = .clear
         collectionView.dataSource = self
         collectionView.register(CustomCollectionViewCell.self, forCellWithReuseIdentifier: CustomCollectionViewCell.identifier)
@@ -292,6 +298,10 @@ private extension ViewController {
     func setupTableView() {
         tableView.register(CustomTableViewCell.self, forCellReuseIdentifier: CustomTableViewCell.identifier)
         tableView.dataSource = self
+        tableView.isUserInteractionEnabled = false
+        tableView.isScrollEnabled = false
+        tableView.bounces = false
+        tableView.addObserver(self, forKeyPath: "contentSize", options: .new, context: nil)
     }
 }
 
@@ -302,10 +312,11 @@ extension ViewController {
     func success(displayWeatherNowInChangedLocations: [(WeatherInEachHour?, Icon?, CurrentLocation)], loca: CurrentLocation) {
         let model = displayWeatherNowInChangedLocations[0]
         self.view.alpha = 1
+//        scrollView.largeContentImageInsets
         activityIndicator.stopAnimating()
         humidityLabel.text = "\(model.0?.weatherHumidity ?? "noData")"
         atmospherePressureLabel.text = "\(model.0?.weatherPressure ?? "noData")"
-        degreelabel.text = "\(model.0?.weatherTemprature ?? "noData")"
+        degreeOfCurrentWeatherInUpperView.text = "\(model.0?.weatherTemprature ?? "noData")"
         feelLikeDegreeLabel.text = "\(model.0?.weatherAppearentTemperature ?? "noData")"
         descriptionOfWeather.text = "\(model.1?.descriptionOfWeather ?? "noData")"
         windSpeedLabel.text = "\(model.0?.weatherWindSpeed ?? "noData")"
@@ -313,15 +324,17 @@ extension ViewController {
         
         if let URLWeatherNowImage = model.1?.image {
             UIImage.loadFrom(url: URLWeatherNowImage, completion: {
-                self.imageViewOfWeatherinCurrentHour.image = $0 })
+                self.imageViewOfCurrentWeatherInUpperView.image = $0 })
         } else {
-            self.imageViewOfWeatherinCurrentHour.image = UIImage(named: "unknown")
+            self.imageViewOfCurrentWeatherInUpperView.image = UIImage(named: "unknown")
         }
         
         if model.0?.isDay == 1 {
-            nightDayUpperView.image = UIImage(named: "day")
+            nightDayImageViewInUpperView.image = UIImage(named: "day")
+//            scrollView.backgroundColor = UIColor(red: 86 / 255, green: 137 / 255, blue: 205 / 255, alpha: 1)
         } else {
-            nightDayUpperView.image = UIImage(named: "night")
+            nightDayImageViewInUpperView.image = UIImage(named: "night")
+//            scrollView.backgroundColor = UIColor(red: 4 / 255, green: 5 / 255, blue: 14 / 255, alpha: 1)
         }
         
         if model.0?.chanceOfRain ?? 0 < 60 {
@@ -392,7 +405,6 @@ extension ViewController: UICollectionViewDataSource {
         return cell
     }
 }
-
 
 
 //TODO:
