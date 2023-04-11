@@ -10,7 +10,6 @@ import UIKit
 import SnapKit
 import SpriteKit
 
-
 protocol MainViewControllerProtocol: UIViewController {
     
     var presenter: MainViewControllerPresenterProtocol? {get set}
@@ -43,21 +42,19 @@ class ViewController: UIViewController, MainViewControllerProtocol {
     private let forecastLabel = UILabel()
     private let nightDayImageViewInUpperView = UIImageView()
     private let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewLayout())
-    private let activityIndicator = UIActivityIndicatorView()
     private let rainView = UIView()
     private let locationManager = LocationManager()
     private let searchController = UISearchController(searchResultsController: nil)
     private var tableViewHeighConstraint: Constraint!
-
     
-//    MARK: - ObserverOfTableViewSize
+    //    MARK: - ObserverOfTableViewSize
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         updateTableViewHeighConstraint(keyPath: keyPath, change: change)
     }
     
     //MARK: - LifeCicle
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setup()
@@ -76,26 +73,10 @@ class ViewController: UIViewController, MainViewControllerProtocol {
 
 private extension ViewController {
     
-//    MARK: - updateTableViewHeighConstraint
-    
-    private func updateTableViewHeighConstraint(keyPath: String?, change: [NSKeyValueChangeKey : Any]?) {
-        var newHeighConstraint: CGFloat?
-        if(keyPath == "contentSize"){
-            if let newValue = change?[.newKey]
-            {
-                let newSize = newValue as! CGSize
-                newHeighConstraint = newSize.height
-                tableView.snp.updateConstraints {
-                    tableViewHeighConstraint = $0.height.equalTo(newHeighConstraint!).constraint
-                }
-                tableView.layoutIfNeeded()
-            }
-        }
-    }
-    
     //MARK: - setup
-
+    
     func setup() {
+        
         let assembly = Assembly()
         assembly.createViewController(view: self)
     }
@@ -130,9 +111,6 @@ private extension ViewController {
         contentView.addSubview(viewForTableView)
         viewForTableView.addSubview(forecastLabel)
         viewForTableView.addSubview(tableView)
-  
-        view.addSubview(activityIndicator)
-        
     }
     
     //MARK: - makeConstraints
@@ -159,20 +137,19 @@ private extension ViewController {
         degreeStackView.snp.makeConstraints {
             degreeStackView.updateConstraints()
             $0.top.equalTo(upperView).offset(150)
-
             $0.leading.trailing.equalTo(contentView)
         }
         descriptionStackView.snp.makeConstraints {
             $0.leading.equalToSuperview().inset(15)
-            $0.bottom.equalTo(contentView)
+            $0.top.equalTo(degreeStackView.snp.bottom)
             $0.centerY.equalTo(collectionView.snp.centerY)
         }
         collectionView.snp.makeConstraints {
-            $0.top.equalTo(degreeStackView.snp.bottom).offset(20)
-            $0.left.equalTo(descriptionStackView.snp.right)
+            $0.top.equalTo(degreeStackView.snp.bottom).offset(5)
+            $0.left.equalTo(descriptionStackView.snp.right).offset(20)
             $0.right.equalToSuperview()
             $0.bottom.equalTo(contentView)
-            $0.height.equalTo(100)
+            $0.height.equalTo(85)
         }
         viewForTableView.snp.makeConstraints {
             $0.top.equalTo(contentView.snp.bottom)
@@ -180,14 +157,13 @@ private extension ViewController {
             $0.width.equalTo(scrollView)
         }
         forecastLabel.snp.makeConstraints {
-            $0.top.leading.equalTo(viewForTableView)
-            $0.bottom.equalTo(tableView.snp.top)
+            $0.top.leading.equalTo(viewForTableView).inset(10)
+            $0.bottom.equalTo(tableView.snp.top).offset(-10)
         }
         tableView.snp.remakeConstraints {
-            tableViewHeighConstraint = $0.height.equalTo(200).constraint
-            $0.top.equalTo(forecastLabel.snp.bottom)
+            tableViewHeighConstraint = $0.height.equalTo(10).constraint
             $0.bottom.equalTo(viewForTableView).inset(50)
-            $0.leading.trailing.equalToSuperview()
+            $0.leading.trailing.equalToSuperview().inset(5)
         }
     }
     
@@ -195,13 +171,13 @@ private extension ViewController {
     
     func makeViews() {
         self.view.backgroundColor = .white
-
+        
         upperView.backgroundColor = .systemBlue
-        upperView.layer.cornerRadius = 20
+        upperView.roundCorners(corners: [.bottomLeft, .bottomRight], radius: 20)
         upperView.clipsToBounds = true
-                
+        
         rainView.isHidden = true
-
+        
         cityLabel.font = .systemFont(ofSize: 40)
         cityLabel.minimumScaleFactor = 0.1
         cityLabel.adjustsFontSizeToFitWidth = true
@@ -226,13 +202,12 @@ private extension ViewController {
         descriptionOfWeather.numberOfLines = 0
         descriptionOfWeather.textColor = .white
         
-        feelLikeDegreeLabel.textColor = .white
         feelLikeDegreeLabel.font = .systemFont(ofSize: 19)
         feelLikeDegreeLabel.minimumScaleFactor = 0.1
         feelLikeDegreeLabel.adjustsFontSizeToFitWidth = true
         feelLikeDegreeLabel.textAlignment = .center
         feelLikeDegreeLabel.numberOfLines = 0
-        feelLikeDegreeLabel.textColor = .systemGray4
+        feelLikeDegreeLabel.textColor = .systemGray5
         
         windSpeedLabel.textColor = .white
         windSpeedLabel.font = .systemFont(ofSize: 15)
@@ -248,7 +223,7 @@ private extension ViewController {
         atmospherePressureLabel.font = .systemFont(ofSize: 15)
         atmospherePressureLabel.minimumScaleFactor = 5
         atmospherePressureLabel.adjustsFontSizeToFitWidth = true
-    
+        
         degreeAndImageStackViewInUpperStackView.distribution = .fillEqually
         
         degreeStackView.axis = .vertical
@@ -262,8 +237,8 @@ private extension ViewController {
         forecastLabel.font = .boldSystemFont(ofSize: 25)
     }
     
-
-
+    
+    
     //MARK: - setupSearchBar
     
     func setupSearchBar() {
@@ -289,7 +264,7 @@ private extension ViewController {
         collectionView.register(CustomCollectionViewCell.self, forCellWithReuseIdentifier: CustomCollectionViewCell.identifier)
         let layout = UICollectionViewFlowLayout()
         layout.scrollDirection = .horizontal
-        layout.itemSize = CGSizeMake(50, 50)
+        layout.itemSize = CGSizeMake(50, 80)
         collectionView.setCollectionViewLayout(layout, animated: false)
     }
     
@@ -310,10 +285,9 @@ private extension ViewController {
 extension ViewController {
     
     func success(displayWeatherNowInChangedLocations: [(WeatherInEachHour?, Icon?, CurrentLocation)], loca: CurrentLocation) {
+        
         let model = displayWeatherNowInChangedLocations[0]
         self.view.alpha = 1
-//        scrollView.largeContentImageInsets
-        activityIndicator.stopAnimating()
         humidityLabel.text = "\(model.0?.weatherHumidity ?? "noData")"
         atmospherePressureLabel.text = "\(model.0?.weatherPressure ?? "noData")"
         degreeOfCurrentWeatherInUpperView.text = "\(model.0?.weatherTemprature ?? "noData")"
@@ -331,10 +305,8 @@ extension ViewController {
         
         if model.0?.isDay == 1 {
             nightDayImageViewInUpperView.image = UIImage(named: "day")
-//            scrollView.backgroundColor = UIColor(red: 86 / 255, green: 137 / 255, blue: 205 / 255, alpha: 1)
         } else {
             nightDayImageViewInUpperView.image = UIImage(named: "night")
-//            scrollView.backgroundColor = UIColor(red: 4 / 255, green: 5 / 255, blue: 14 / 255, alpha: 1)
         }
         
         if model.0?.chanceOfRain ?? 0 < 60 {
@@ -349,6 +321,23 @@ extension ViewController {
     
     func error(error: NSError) {
         print(error.localizedDescription)
+    }
+    
+    //    MARK: - updateTableViewHeighConstraint
+    
+    private func updateTableViewHeighConstraint(keyPath: String?, change: [NSKeyValueChangeKey : Any]?) {
+        var newHeighConstraint: CGFloat?
+        if(keyPath == "contentSize"){
+            if let newValue = change?[.newKey]
+            {
+                let newSize = newValue as! CGSize
+                newHeighConstraint = newSize.height
+                tableView.snp.updateConstraints {
+                    tableViewHeighConstraint = $0.height.equalTo(newHeighConstraint!).constraint
+                }
+                tableView.layoutIfNeeded()
+            }
+        }
     }
 }
 
@@ -405,15 +394,3 @@ extension ViewController: UICollectionViewDataSource {
         return cell
     }
 }
-
-
-//TODO:
-// сменить констрейнты для день ночь и градусы
-// оптимизировать код
-// сделать сглыживание углов на погоде
-// сделать изменяющийся шрифт с night day
-// c min max temp
-// change day photo
-//
-
-

@@ -128,7 +128,7 @@ struct InfoAboutDayWeather: Decodable {
 extension InfoAboutDayWeather: JSONDecodable {
     init?(JSON: [String : AnyObject]) {
         guard let maxTemp = JSON["maxtemp_c"] as? Double,
-        let minTemp = JSON["mintemp_c"] as? Double else {
+              let minTemp = JSON["mintemp_c"] as? Double else {
             return nil
         }
         self.maxTemp = maxTemp
@@ -143,7 +143,6 @@ extension InfoAboutDayWeather {
 
 struct WeatherListDuringThreeDays {
     let forecastDay: NSArray
-
 }
 
 

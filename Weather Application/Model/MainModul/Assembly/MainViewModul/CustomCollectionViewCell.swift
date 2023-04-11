@@ -51,27 +51,12 @@ class CustomCollectionViewCell: UICollectionViewCell {
     public func configureView(_ model: (WeatherInEachHour?, Icon?, CurrentLocation)) {
         
         imageViewOfWeatherIcon.contentMode = .scaleAspectFill
-        labelTime.text = getCurrentDate(dateInString: model.0?.time ?? "no date")
+        labelTime.text = getCurrentDateFromListOfTimes(dateInString: model.0?.time ?? "no date").0
         labelDeegree.text = model.0?.weatherTemprature
-        
-//        TODO: make normal code
-        
-        if let timeZone = TimeZone(identifier: model.2.timeZone) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeZone = timeZone
-            dateFormatter.dateFormat = "MMM d, h:mm a"
-            let vc = dateFormatter.string(from: Date()) // Sep 26, 11:22 AM
-            let vcDate = dateFormatter.date(from: vc)
-//            let weekDay = (vcDate!.formatted(Date.FormatStyle().weekday(.wide)))
-            dateFormatter.dateStyle = .long
-            dateFormatter.dateFormat = "HH:00"
-            let updateDateInString = dateFormatter.string(from: vcDate!)
-            if updateDateInString == getCurrentDate(dateInString: model.0?.time ?? "no data") {
+
+        if getCurrentTimeInChoosenCity(currentTimeZone: model.2.timeZone) == getCurrentDateFromListOfTimes(dateInString: model.0?.time ?? "no data").1 {
                 labelTime.text = "Сейчас"
-                
             }
-        }
-        
         if let URLWeatherImage = model.1?.image {
             UIImage.loadFrom(url: URLWeatherImage, completion: {
                 self.imageViewOfWeatherIcon.image = $0 })
@@ -89,7 +74,7 @@ private extension CustomCollectionViewCell {
     func setupConstraints() {
         
         labelTime.snp.makeConstraints {
-            $0.top.equalTo(contentView.snp.top).inset(-20)
+            $0.top.equalTo(contentView.snp.top)
             $0.centerX.equalTo(contentView.snp.centerX)
         }
         imageViewOfWeatherIcon.snp.makeConstraints {
@@ -98,24 +83,35 @@ private extension CustomCollectionViewCell {
             $0.centerX.equalTo(contentView.snp.centerX)
         }
         labelDeegree.snp.makeConstraints {
-            $0.top.equalTo(imageViewOfWeatherIcon.snp.bottom).offset(5)
+            $0.top.equalTo(imageViewOfWeatherIcon.snp.bottom)
             $0.centerX.equalTo(contentView.snp.centerX)
+            $0.bottom.equalTo(contentView.snp.bottom)
         }
+    }
+    
+    //MARK: - getCurrentDateFromChoosenCity
+
+    func getCurrentTimeInChoosenCity(currentTimeZone: String) -> String {
+        guard  let timeZone = TimeZone(identifier: currentTimeZone) else { return ""}
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = timeZone
+        dateFormatter.dateFormat = "dd HH:00"
+        let currentDate = dateFormatter.string(from: Date())
+        return currentDate
     }
     
     //MARK: - getCurrentDate
     
-    func getCurrentDate(dateInString: String) -> (String?) {
+    func getCurrentDateFromListOfTimes(dateInString: String) -> (String?, String?) {
         
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
         let dateInDate = formatter.date(from: dateInString)!
+        formatter.dateFormat = "dd HH:mm"
+        let updateDateInStringForCompareWithCurrentDate = formatter.string(from: dateInDate)
         formatter.dateFormat = "HH:mm"
-        let updateDateInString = formatter.string(from: dateInDate)
-        
-        
-        
-        return updateDateInString
+        let updateDateInStringToSetTextOfLabel = formatter.string(from: dateInDate)
+        return (updateDateInStringToSetTextOfLabel, updateDateInStringForCompareWithCurrentDate)
     }
     
     //MARK: - setupViews

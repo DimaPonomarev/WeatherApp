@@ -18,7 +18,6 @@ protocol MainViewControllerPresenterProtocol: AnyObject {
     
     func providingDataForSetingWeather(inputedTextInSearchBar: String)
     func setCurrentLocation()
-    
 }
 
 //MARK: - MainViewControllerPresenter
@@ -113,7 +112,7 @@ class MainViewControllerPresenter: MainViewControllerPresenterProtocol {
                 }
             }
         }
-
+        
         //        информация в целом о дне по всем дням
         
         for eachDay in infoAboutThreeDays.forecastDay {
@@ -123,7 +122,7 @@ class MainViewControllerPresenter: MainViewControllerPresenterProtocol {
                       let iconOfWeatherOfEachDay = infoAboutDaysCondition["icon"] as? String,
                       let descriptionOfWeatherOfEachDay = infoAboutDaysCondition["text"] as? String,
                       let dateOfEachDay = eachDayAsDictionari["date"] as? String else { return nil }
-
+                
                 self.weatherArrayOfSeveralDays.append((InfoAboutDayWeather(JSON: infoAboutDays), Icon(descriptionOfWeather: descriptionOfWeatherOfEachDay, iconOfWeatherAsString: iconOfWeatherOfEachDay), dateOfEachDay, curentLocation))
             }
         }

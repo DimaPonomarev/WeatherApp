@@ -26,7 +26,6 @@ final class CustomTableViewCell: UITableViewCell {
     private let imageViewOfWeatherIcon = UIImageView()
     private let dateStackView = UIStackView()
     private let weatherStackView = UIStackView()
-    
     private let nightTemperature = UILabel()
     private let dayTemperature = UILabel()
     
@@ -46,31 +45,14 @@ final class CustomTableViewCell: UITableViewCell {
     func configureView(_ model: (InfoAboutDayWeather?, Icon?, String?, CurrentLocation)) {
         
         dateLabel.text = getCurrentDate(dateInString: model.2 ?? "no data").0
-        weekDayLabel.text = getCurrentDate(dateInString: model.2 ?? "no data").2
+        weekDayLabel.text = getCurrentDate(dateInString: model.2 ?? "no data").1
         maxTempLabel.text = "\(model.0?.maxWeatherTemperature ?? "no data")"
         minTempLabel.text = "\(model.0?.minWeatherTemperature ?? "no data")"
-        setupWeekDayLabel(dateString: getCurrentDate(dateInString: model.2 ?? "no data").1, location: model.3)
         
-        //        TODO: - make normal code
-        
-        
-        if let timeZone = TimeZone(identifier: model.3.timeZone) {
-            let dateFormatter = DateFormatter()
-            dateFormatter.timeZone = timeZone
-            dateFormatter.dateFormat = "MMM d, h:mm a"
-            let vc = dateFormatter.string(from: Date()) // Sep 26, 11:22 AM
-            let vcDate = dateFormatter.date(from: vc)
-//            let weekDay = (vcDate!.formatted(Date.FormatStyle().weekday(.wide)))
-            dateFormatter.dateStyle = .long
-            dateFormatter.dateFormat = "dd MMMM"
-            let updateDateInString = dateFormatter.string(from: vcDate!)
-            if updateDateInString == getCurrentDate(dateInString: model.2 ?? "no data").0 {
-                weekDayLabel.text = "Сегодня"
-                makeFirstCell()
-                
-            }
+        if getCurrentDateInChoosenCity(currentTimeZone: model.3.timeZone) == getCurrentDate(dateInString: model.2 ?? "no data").0 {
+            weekDayLabel.text = "Сегодня"
+            makeFirstCell()
         }
-        
         if let URLWeatherImage = model.1?.image {
             UIImage.loadFrom(url: URLWeatherImage, completion: {
                 self.imageViewOfWeatherIcon.image = $0 })
@@ -86,7 +68,6 @@ private extension CustomTableViewCell {
     //  MARK: - setupMethods
     
     func setupMethods() {
-        
         addViews()
         makeConstraints()
         setupViews()
@@ -95,7 +76,6 @@ private extension CustomTableViewCell {
     //  MARK: - addViews
     
     func addViews() {
-        
         contentView.addSubview(dateStackView)
         contentView.addSubview(weatherStackView)
         contentView.addSubview(imageViewOfWeatherIcon)
@@ -110,42 +90,34 @@ private extension CustomTableViewCell {
     //  MARK: - makeConstraints
     
     func makeConstraints() {
-        
-        
         dateStackView.snp.makeConstraints {
             $0.left.equalToSuperview().offset(15)
             $0.top.bottom.equalToSuperview().inset(10)
         }
         imageViewOfWeatherIcon.snp.makeConstraints {
-            $0.left.equalTo(dateStackView.snp.right)
-            $0.right.equalTo(weatherStackView.snp.left)
-            $0.top.bottom.equalToSuperview().inset(10)
+            $0.trailing.equalTo(weatherStackView.snp.leading).inset(-20)
+            $0.centerY.equalToSuperview()
+            $0.height.width.equalTo(40)
         }
-        
         weatherStackView.snp.makeConstraints {
-            $0.right.equalToSuperview().inset(5)
-            $0.bottom.equalToSuperview()
-            $0.left.equalTo(imageViewOfWeatherIcon.snp.right)
+            $0.right.equalToSuperview().inset(15)
+            $0.centerY.equalToSuperview()
         }
         dayTemperature.snp.makeConstraints{
             $0.leading.trailing.equalTo(maxTempLabel)
-            $0.top.equalToSuperview()
+            $0.top.equalToSuperview().inset(-5)
         }
         nightTemperature.snp.makeConstraints{
             $0.leading.trailing.equalTo(minTempLabel)
             $0.top.equalTo(dayTemperature)
         }
-        
     }
     
     //  MARK: - setupViews
     
     func setupViews() {
-        
-        imageViewOfWeatherIcon.contentMode = .right
+        imageViewOfWeatherIcon.contentMode = .scaleToFill
         imageViewOfWeatherIcon.contentScaleFactor = imageViewOfWeatherIcon.alignmentRectInsets.left
-        
-        
         dateLabel.font = .systemFont(ofSize: 16)
         dateLabel.textColor = .gray
         
@@ -164,13 +136,22 @@ private extension CustomTableViewCell {
         weatherStackView.axis = .horizontal
         weatherStackView.distribution = .fillProportionally
         weatherStackView.spacing = 10
-        
-        
+    }
+    
+    //  MARK: - getCurrentDateInChoosenCity
+    
+    func getCurrentDateInChoosenCity(currentTimeZone: String) -> String {
+        guard  let timeZone = TimeZone(identifier: currentTimeZone) else { return ""}
+        let dateFormatter = DateFormatter()
+        dateFormatter.timeZone = timeZone
+        dateFormatter.dateFormat = "dd MMMM"
+        let updateDateInString = dateFormatter.string(from: Date())
+        return updateDateInString
     }
     
     //  MARK: - getCurrentDate
     
-    func getCurrentDate(dateInString: String) -> (String, Date, String) {
+    func getCurrentDate(dateInString: String) -> (String, String) {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd"
         let dateInDate = formatter.date(from: dateInString)!
@@ -178,34 +159,13 @@ private extension CustomTableViewCell {
         formatter.dateStyle = .long
         formatter.dateFormat = "dd MMMM"
         let updateDateInString = formatter.string(from: dateInDate)
-        return (updateDateInString, dateInDate, weekDay)
+        return (updateDateInString, weekDay)
     }
     
-    //  MARK: - setupWeekDayLabel
+    //  MARK: - makeFirstCell
     
-    func setupWeekDayLabel(dateString: Date, location: CurrentLocation) {
-        
-        //        print(location.timeZone)
-        
-        
-        
-        
-        var calendar = Calendar(identifier: .gregorian)
-        calendar = Calendar.autoupdatingCurrent
-        calendar.locale = Locale(identifier: "ru_RU")
-        calendar.timeZone = TimeZone(identifier: location.timeZone)!
-        let isDateWeekend = calendar.isDateInWeekend
-//        let isDateToday = calendar.isDateInToday
-        
-        if isDateWeekend(dateString) {
-            weekDayLabel.textColor = .red
-        } else {
-            weekDayLabel.textColor = .black
-        }
-    }
     
     private func makeFirstCell() {
-        
         dayTemperature.adjustsFontSizeToFitWidth = true
         dayTemperature.font = .systemFont(ofSize: 20)
         dayTemperature.text = "День"
@@ -219,6 +179,10 @@ private extension CustomTableViewCell {
         nightTemperature.text = "Ночь"
         nightTemperature.minimumScaleFactor = 0.1
         
+        weatherStackView.snp.remakeConstraints {
+            $0.right.equalToSuperview().inset(15)
+            $0.bottom.equalToSuperview().inset(10)
+        }
     }
 }
 

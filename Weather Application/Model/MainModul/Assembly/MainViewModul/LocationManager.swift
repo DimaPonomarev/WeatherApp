@@ -9,7 +9,7 @@
 import Foundation
 import CoreLocation
 
-// MARK: -
+// MARK: LocationManager
 class LocationManager: NSObject {
     
     private let locationManager = CLLocationManager()
@@ -25,6 +25,8 @@ class LocationManager: NSObject {
         self.locationManager.requestWhenInUseAuthorization()
     }
 }
+
+// MARK: extension LocationManager
 
 extension LocationManager {
     
