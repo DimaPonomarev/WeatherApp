@@ -14,13 +14,21 @@ protocol MainViewControllerProtocol: UIViewController {
     
     var presenter: MainViewControllerPresenterProtocol? {get set}
     func error(error: NSError)
-    func success(displayWeatherNowInChangedLocations: [(WeatherInEachHour?, Icon?, CurrentLocation)], loca: CurrentLocation)
+    func passDataFromPresenterToViewController(model: ModelForTopView)
+    func testInVc(getbackData: String)
 }
 
 //MARK: - Class ViewController
 
-class ViewController: UIViewController, MainViewControllerProtocol {
+class MainViewController: UIViewController, MainViewControllerProtocol {
     
+    
+
+    
+    func testInVc(getbackData: String) {
+        print("VC get back data with: \(getbackData)")
+    }
+
     var presenter: MainViewControllerPresenterProtocol?
     
     lazy var scrollView = UIScrollView()
@@ -28,7 +36,7 @@ class ViewController: UIViewController, MainViewControllerProtocol {
     private let viewForTableView = UIView()
     private let upperView = UIView()
     private let cityLabel = UILabel()
-    private let imageViewOfCurrentWeatherInUpperView = UIImageView()
+    private let imageViewOfCurrentWeatherInUpperView = WebImageView()
     private let atmospherePressureLabel = UILabel()
     private let humidityLabel = UILabel()
     private let degreeOfCurrentWeatherInUpperView = UILabel()
@@ -71,7 +79,7 @@ class ViewController: UIViewController, MainViewControllerProtocol {
 
 //MARK: - Private Extension
 
-private extension ViewController {
+private extension MainViewController {
     
     //MARK: - setup
     
@@ -282,44 +290,26 @@ private extension ViewController {
 
 //MARK: - Public extensions
 
-extension ViewController {
+extension MainViewController {
     
-    func success(displayWeatherNowInChangedLocations: [(WeatherInEachHour?, Icon?, CurrentLocation)], loca: CurrentLocation) {
-        
-        let model = displayWeatherNowInChangedLocations[0]
-        self.view.alpha = 1
-        humidityLabel.text = "\(model.0?.weatherHumidity ?? "noData")"
-        atmospherePressureLabel.text = "\(model.0?.weatherPressure ?? "noData")"
-        degreeOfCurrentWeatherInUpperView.text = "\(model.0?.weatherTemprature ?? "noData")"
-        feelLikeDegreeLabel.text = "\(model.0?.weatherAppearentTemperature ?? "noData")"
-        descriptionOfWeather.text = "\(model.1?.descriptionOfWeather ?? "noData")"
-        windSpeedLabel.text = "\(model.0?.weatherWindSpeed ?? "noData")"
-        cityLabel.text = "\(loca.name), \(loca.country)"
-        
-        if let URLWeatherNowImage = model.1?.image {
-            UIImage.loadFrom(url: URLWeatherNowImage, completion: {
-                self.imageViewOfCurrentWeatherInUpperView.image = $0 })
-        } else {
-            self.imageViewOfCurrentWeatherInUpperView.image = UIImage(named: "unknown")
-        }
-        
-        if model.0?.isDay == 1 {
-            nightDayImageViewInUpperView.image = UIImage(named: "day")
-        } else {
-            nightDayImageViewInUpperView.image = UIImage(named: "night")
-        }
-        
-        if model.0?.chanceOfRain ?? 0 < 60 {
-            rainView.isHidden = true
-        } else {
-            rainView.isHidden = false
-        }
-        
+    public func passDataFromPresenterToViewController(model: ModelForTopView) {
+        view.alpha = 1
+        humidityLabel.text = "\(model.weatherHumidity)"
+        atmospherePressureLabel.text = "\(model.weatherPressure)"
+        degreeOfCurrentWeatherInUpperView.text = "\(model.weatherTemprature)"
+        feelLikeDegreeLabel.text = "\(model.weatherAppearentTemperature)"
+        descriptionOfWeather.text = "\(model.description)"
+        windSpeedLabel.text = "\(model.weatherWindSpeed)"
+        cityLabel.text = "\(model.cityLocation)"
+        imageViewOfCurrentWeatherInUpperView.set(imageUrl: model.iconURL)
+        nightDayImageViewInUpperView.image = model.switchNightDay
+        rainView.isHidden = model.switchRain
+
         tableView.reloadData()
         collectionView.reloadData()
     }
     
-    func error(error: NSError) {
+    public func error(error: NSError) {
         print(error.localizedDescription)
     }
     
@@ -343,7 +333,7 @@ extension ViewController {
 
 //MARK: - extension UISearchResultsUpdating
 
-extension ViewController: UISearchResultsUpdating {
+extension MainViewController: UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
         updateSearch(searchController: searchController)
@@ -358,22 +348,22 @@ extension ViewController: UISearchResultsUpdating {
             self.view.alpha = 1
         }
         if city.count > 3 {
-            presenter?.providingDataForSetingWeather(inputedTextInSearchBar: city)
+            presenter?.makeRequestToInteractorToProvideWeatherData(in: city)
         }
     }
 }
 
 //MARK: - extension UITableViewDataSource
 
-extension ViewController: UITableViewDataSource {
+extension MainViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return presenter?.weatherArrayOfSeveralDays.count ?? 0
+        return presenter?.tableViewModel?.count ?? 0
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: CustomTableViewCell.identifier, for: indexPath) as? CustomTableViewCell else { return UITableViewCell() }
-        guard let modelForTableView = presenter?.weatherArrayOfSeveralDays[indexPath.row] else {return UITableViewCell()}
+        guard let modelForTableView = presenter?.tableViewModel?[indexPath.row] else {return UITableViewCell()}
         cell.configureView(modelForTableView)
         return cell
     }
@@ -381,15 +371,15 @@ extension ViewController: UITableViewDataSource {
 
 //MARK: - extension UICollectionViewDataSource
 
-extension ViewController: UICollectionViewDataSource {
+extension MainViewController: UICollectionViewDataSource {
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return (presenter?.weatherArrayToday.count) ?? 0
+        return (presenter?.collectionViewModel?.count) ?? 0
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: CustomCollectionViewCell.identifier, for: indexPath) as? CustomCollectionViewCell else { return UICollectionViewCell()}
-        guard let modelForColletionView = presenter?.weatherArrayToday[indexPath.row] else {return UICollectionViewCell()}
+        guard let modelForColletionView = presenter?.collectionViewModel?[indexPath.row] else {return UICollectionViewCell()}
         cell.configureView(modelForColletionView)
         return cell
     }

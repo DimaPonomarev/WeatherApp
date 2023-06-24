@@ -9,7 +9,10 @@ import Foundation
 
 class Assembly {
     func createViewController(view: MainViewControllerProtocol) {
-        let presenter = MainViewControllerPresenter(weatherArrayOfThreeDays: [], weatherArrayOfCurrentDay: [])
+        let presenter = MainViewControllerPresenter()
+        let interactor = MainViewControllerInteractor()
+        interactor.presenter = presenter
+        presenter.interactor = interactor
         presenter.view = view
         view.presenter = presenter
     }

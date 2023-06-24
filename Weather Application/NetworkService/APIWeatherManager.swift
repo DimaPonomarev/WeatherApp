@@ -43,15 +43,12 @@ class APIWeatherManager: NetworkManageProtocol {
         return URLSession(configuration: .default)
     }()
     
-    func getWeatherByCoordinates(coordinates:Coordinates, complition: @escaping (Result<WeatherListDuringThreeDays, CurrentLocation>) -> Void) {
+    func getWeatherByCoordinates(coordinates:Coordinates, complition: @escaping (Result<ForecastWeather>) -> Void) {
         let request = Forecast.current(coordinates: coordinates).requestWithFullURL
-        fetch(request: request, parse: { (json) -> (WeatherListDuringThreeDays, CurrentLocation)? in
+        fetch(request: request, parse: { (json) -> (ForecastWeather)? in
 
-            if let dictionaryLocation = (json as AnyObject)["location"] as? [String: AnyObject],
-               let JSONforecast = (json as AnyObject)["forecast"] as? [String: AnyObject],
-               let weatherListinEachDate = JSONforecast["forecastday"] as? NSArray
-            {
-                return (WeatherListDuringThreeDays(forecastDay: weatherListinEachDate), CurrentLocation(JSON: dictionaryLocation)) as? (WeatherListDuringThreeDays, CurrentLocation)
+            if let parsedJson = json as? ForecastWeather {
+                return (parsedJson)
             } else {
                 return nil
             }

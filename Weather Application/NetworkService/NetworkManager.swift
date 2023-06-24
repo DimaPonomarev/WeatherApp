@@ -8,8 +8,8 @@
 
 import Foundation
 
-enum Result<threeDaysWeather, Location> {
-    case succes(forecastWeatherInDays: threeDaysWeather, modelLocation: Location)
+enum Result<Forecast> {
+    case succes(forecastWeather: Forecast)
     case failure(Error)
 }
 
@@ -23,7 +23,7 @@ protocol URLPathProtocol {
 protocol NetworkManageProtocol {
     
     func JSONDataTask(request: URLRequest, complition: @escaping (Any?, HTTPURLResponse?, Error?) -> Void) -> URLSessionDataTask
-    func fetch<threeDaysWeather, Location>(request: URLRequest, parse: @escaping((Any?) -> (threeDaysWeather, Location)?), complitionHandler: @escaping(Result<threeDaysWeather, Location>) -> Void)
+    func fetch<forecast>(request: URLRequest, parse: @escaping((Any?) -> (forecast)?), complitionHandler: @escaping(Result<forecast>) -> Void)
 }
 
 extension NetworkManageProtocol {
@@ -45,7 +45,9 @@ extension NetworkManageProtocol {
                 switch HTTPResponse.statusCode {
                 case 200:
                     do {
-                        let json = try JSONSerialization.jsonObject(with: data!) as Any
+                        let jsonDecoder = JSONDecoder()
+                        jsonDecoder.keyDecodingStrategy = .convertFromSnakeCase
+                        let json = try jsonDecoder.decode(ForecastWeather.self, from: data!)
                         complition(json, HTTPResponse, nil)
                     } catch let error as NSError {
                         complition(nil, HTTPResponse, error)
@@ -61,7 +63,7 @@ extension NetworkManageProtocol {
     
     //MARK: - fetch
 
-    func fetch<threeDaysWeather, Location>(request: URLRequest, parse: @escaping((Any?) -> (threeDaysWeather, Location)?), complitionHandler: @escaping(Result<threeDaysWeather, Location>) -> Void) {
+    func fetch<Forecast>(request: URLRequest, parse: @escaping((Any?) -> (Forecast)?), complitionHandler: @escaping(Result<Forecast>) -> Void) {
 
         let dataTask = JSONDataTask(request: request) { all, request, error in
             guard all != nil else {
@@ -71,7 +73,7 @@ extension NetworkManageProtocol {
                 return
             }
             if let value = parse(all) {
-                complitionHandler(.succes(forecastWeatherInDays: value.0, modelLocation: value.1))
+                complitionHandler(.succes(forecastWeather: value))
             } else {
                 let error = NSError(domain: "Can't parse JSON", code: 101)
                 complitionHandler(.failure(error))

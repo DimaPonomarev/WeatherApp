@@ -23,7 +23,7 @@ final class CustomTableViewCell: UITableViewCell {
     private let minTempLabel = UILabel()
     private let dateLabel = UILabel()
     private let weekDayLabel = UILabel()
-    private let imageViewOfWeatherIcon = UIImageView()
+    private let imageViewOfWeatherIcon = WebImageView()
     private let dateStackView = UIStackView()
     private let weatherStackView = UIStackView()
     private let nightTemperature = UILabel()
@@ -42,22 +42,17 @@ final class CustomTableViewCell: UITableViewCell {
     
     //MARK: - configureView
     
-    func configureView(_ model: (InfoAboutDayWeather?, Icon?, String?, CurrentLocation)) {
+    func configureView(_ model: ModelForTableView) {
         
-        dateLabel.text = getCurrentDate(dateInString: model.2 ?? "no data").0
-        weekDayLabel.text = getCurrentDate(dateInString: model.2 ?? "no data").1
-        maxTempLabel.text = "\(model.0?.maxWeatherTemperature ?? "no data")"
-        minTempLabel.text = "\(model.0?.minWeatherTemperature ?? "no data")"
-        
-        if getCurrentDateInChoosenCity(currentTimeZone: model.3.timeZone) == getCurrentDate(dateInString: model.2 ?? "no data").0 {
-            weekDayLabel.text = "Сегодня"
-            makeFirstCell()
-        }
-        if let URLWeatherImage = model.1?.image {
-            UIImage.loadFrom(url: URLWeatherImage, completion: {
-                self.imageViewOfWeatherIcon.image = $0 })
+        dateLabel.text = getCurrentDate(dateInString: model.date).0
+        maxTempLabel.text = "\(model.maxWeatherTemperature)"
+        minTempLabel.text = "\(model.minWeatherTemperature)"
+        imageViewOfWeatherIcon.set(imageUrl: model.iconURL)
+        if getCurrentDateInChoosenCity(currentTimeZone: model.timeZone) == getCurrentDate(dateInString: model.date).0  {
+            visibleUIPropertiesOnFirstCell(visible: false)
         } else {
-            return self.imageViewOfWeatherIcon.image = UIImage(named: "undefinedWeather") }
+            visibleUIPropertiesOnFirstCell(visible: true)
+        }
     }
 }
 
@@ -121,6 +116,9 @@ private extension CustomTableViewCell {
         dateLabel.font = .systemFont(ofSize: 16)
         dateLabel.textColor = .gray
         
+
+
+        
         maxTempLabel.adjustsFontSizeToFitWidth = true
         maxTempLabel.font = .systemFont(ofSize: 20)
         maxTempLabel.minimumScaleFactor = 0.1
@@ -134,14 +132,14 @@ private extension CustomTableViewCell {
         dateStackView.distribution = .equalCentering
         
         weatherStackView.axis = .horizontal
-        weatherStackView.distribution = .fillProportionally
-        weatherStackView.spacing = 10
+        weatherStackView.distribution = .fillEqually
+        weatherStackView.spacing = 15
     }
     
     //  MARK: - getCurrentDateInChoosenCity
     
     func getCurrentDateInChoosenCity(currentTimeZone: String) -> String {
-        guard  let timeZone = TimeZone(identifier: currentTimeZone) else { return ""}
+        guard let timeZone = TimeZone(identifier: currentTimeZone) else { return ""}
         let dateFormatter = DateFormatter()
         dateFormatter.timeZone = timeZone
         dateFormatter.dateFormat = "dd MMMM"
@@ -165,7 +163,15 @@ private extension CustomTableViewCell {
     //  MARK: - makeFirstCell
     
     
-    private func makeFirstCell() {
+    private func visibleUIPropertiesOnFirstCell(visible: Bool) {
+        weekDayLabel.isHidden = visible
+        dayTemperature.isHidden = visible
+        nightTemperature.isHidden = visible
+        
+        weekDayLabel.font = .systemFont(ofSize: 16)
+        weekDayLabel.textColor = .darkGray
+        weekDayLabel.text = "Сегодня"
+
         dayTemperature.adjustsFontSizeToFitWidth = true
         dayTemperature.font = .systemFont(ofSize: 20)
         dayTemperature.text = "День"

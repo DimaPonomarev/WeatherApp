@@ -2,14 +2,6 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>WeatherApp need to know your location</string>
-	<key>NSLocationAlwaysUsageDescription</key>
-	<string>WeatherApp need to know your location</string>
-	<key>NSLocationUsageDescription</key>
-	<string>WeatherApp need to know your location</string>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>WeatherApp need to know your location</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
@@ -27,5 +19,7 @@
 			</array>
 		</dict>
 	</dict>
+	<key>UIBackgroundModes</key>
+	<array/>
 </dict>
 </plist>

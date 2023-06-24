@@ -19,26 +19,24 @@ class CustomCollectionViewCell: UICollectionViewCell {
     
     //  MARK: - UI properties
     
-    let imageViewOfWeatherIcon = UIImageView()
+    let imageViewOfWeatherIcon = WebImageView()
     let labelTime = UILabel()
     let labelDeegree = UILabel()
     
     //MARK: - Init
     
     override init(frame: CGRect) {
-        
         super.init(frame: frame)
-        contentView.addSubview(imageViewOfWeatherIcon)
+        setup()
     }
     
     required init?(coder: NSCoder) {
         fatalError()
     }
     
-    //MARK: - override layoutSubviews
+    //MARK: - setup
     
-    override func layoutSubviews() {
-        super.layoutSubviews()
+    func setup() {
         contentView.addSubview(imageViewOfWeatherIcon)
         contentView.addSubview(labelTime)
         contentView.addSubview(labelDeegree)
@@ -48,20 +46,14 @@ class CustomCollectionViewCell: UICollectionViewCell {
     
     //MARK: - configureView
     
-    public func configureView(_ model: (WeatherInEachHour?, Icon?, CurrentLocation)) {
+    public func configureView(_ model: ModelForCollectionView) {
         
-        imageViewOfWeatherIcon.contentMode = .scaleAspectFill
-        labelTime.text = getCurrentDateFromListOfTimes(dateInString: model.0?.time ?? "no date").0
-        labelDeegree.text = model.0?.weatherTemprature
-
-        if getCurrentTimeInChoosenCity(currentTimeZone: model.2.timeZone) == getCurrentDateFromListOfTimes(dateInString: model.0?.time ?? "no data").1 {
-                labelTime.text = "Сейчас"
-            }
-        if let URLWeatherImage = model.1?.image {
-            UIImage.loadFrom(url: URLWeatherImage, completion: {
-                self.imageViewOfWeatherIcon.image = $0 })
-        } else {
-            return self.imageViewOfWeatherIcon.image = UIImage(named: "undefinedWeather") }
+        labelDeegree.text = "\(model.temperature)"
+        labelTime.text = getCurrentDateFromListOfTimes(dateInString: model.time).0
+        imageViewOfWeatherIcon.set(imageUrl: model.iconURL)
+        if getCurrentTimeInChoosenCity(currentTimeZone: model.timeZone) == getCurrentDateFromListOfTimes(dateInString: model.time).1 {
+            labelTime.text = "Сейчас"
+        }
     }
 }
 
@@ -90,7 +82,7 @@ private extension CustomCollectionViewCell {
     }
     
     //MARK: - getCurrentDateFromChoosenCity
-
+    
     func getCurrentTimeInChoosenCity(currentTimeZone: String) -> String {
         guard  let timeZone = TimeZone(identifier: currentTimeZone) else { return ""}
         let dateFormatter = DateFormatter()
@@ -120,6 +112,8 @@ private extension CustomCollectionViewCell {
         
         labelTime.font = .systemFont(ofSize: 15)
         labelTime.textColor = .white
+        
+        imageViewOfWeatherIcon.contentMode = .scaleAspectFill
         
         if labelTime.text == "Сейчас" {
             labelTime.font = .boldSystemFont(ofSize: 14)
