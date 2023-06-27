@@ -1,16 +1,20 @@
 PODS:
   - SnapKit (5.6.0)
+  - VK-ios-sdk (1.6.4)
 
 DEPENDENCIES:
   - SnapKit
+  - VK-ios-sdk
 
 SPEC REPOS:
   trunk:
     - SnapKit
+    - VK-ios-sdk
 
 SPEC CHECKSUMS:
   SnapKit: e01d52ebb8ddbc333eefe2132acf85c8227d9c25
+  VK-ios-sdk: 21091f214d271a74b3a3313ec62d1c4da98ce00f
 
-PODFILE CHECKSUM: 120662220d47b0ac4d6b33440b8aa3f7b8651895
+PODFILE CHECKSUM: 803ae42b304669fee811334dfac289046603666f
 
 COCOAPODS: 1.11.3
