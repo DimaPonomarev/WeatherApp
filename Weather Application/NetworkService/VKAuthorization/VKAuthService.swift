@@ -32,7 +32,7 @@ final class VKAuthService: NSObject, VKSdkDelegate, VKSdkUIDelegate {
     
     // MARK: - determination of current session
     
-    func wakeUpSession() {
+    public func wakeUpSession() {
         
         let scope = ["friends,wall"]
         
@@ -52,21 +52,21 @@ final class VKAuthService: NSObject, VKSdkDelegate, VKSdkUIDelegate {
     
     // MARK: - VKSdkDelegate
     
-    func vkSdkAccessAuthorizationFinished(with result: VKAuthorizationResult!) {
+    public func vkSdkAccessAuthorizationFinished(with result: VKAuthorizationResult!) {
         if result.token != nil {
             delegate?.authServiceSignIn()
         }
     }
     
-    func vkSdkUserAuthorizationFailed() {
+    public func vkSdkUserAuthorizationFailed() {
     }
     
     // MARK: VkSdkUIDelegate
     
-    func vkSdkShouldPresent(_ controller: UIViewController!) {
+    public func vkSdkShouldPresent(_ controller: UIViewController!) {
         delegate?.authServiceShouldShow(controller)
     }
     
-    func vkSdkNeedCaptchaEnter(_ captchaError: VKError!) {
+    public func vkSdkNeedCaptchaEnter(_ captchaError: VKError!) {
     }
 }

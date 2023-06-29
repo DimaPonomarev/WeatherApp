@@ -20,11 +20,12 @@ protocol MainViewControllerProtocol: UIViewController {
 
 //MARK: - Class ViewController
 
-class MainViewController: UIViewController, MainViewControllerProtocol {
-
+final class MainViewController: UIViewController, MainViewControllerProtocol {
+    
     var presenter: MainViewControllerPresenterProtocol?
     
-    lazy var scrollView = UIScrollView()
+    private lazy var scrollView = UIScrollView()
+    private let profileImageView = WebImageView()
     private let contentView = UIView()
     private let viewForTableView = UIView()
     private let upperView = UIView()
@@ -47,6 +48,7 @@ class MainViewController: UIViewController, MainViewControllerProtocol {
     private let locationManager = LocationManager()
     private let searchController = UISearchController(searchResultsController: nil)
     private var tableViewHeighConstraint: Constraint!
+    
     
     //    MARK: - ObserverOfTableViewSize
     
@@ -77,7 +79,6 @@ private extension MainViewController {
     //MARK: - setup
     
     func setup() {
-        
         let assembly = Assembly()
         assembly.createViewController(view: self)
     }
@@ -235,9 +236,11 @@ private extension MainViewController {
         
         forecastLabel.text = "Прогноз на 7 Дней"
         forecastLabel.font = .boldSystemFont(ofSize: 25)
+        
+        profileImageView.layer.masksToBounds = true
+        profileImageView.layer.cornerRadius = 20
+        profileImageView.contentMode = .scaleAspectFit
     }
-    
-    
     
     //MARK: - setupSearchBar
     
@@ -245,7 +248,9 @@ private extension MainViewController {
         navigationItem.searchController = searchController
         searchController.searchResultsUpdater = self
         searchController.searchBar.textField?.backgroundColor = .white.withAlphaComponent(0.7)
+        searchController.searchBar.textField?.keyboardType = .asciiCapable
         navigationItem.hidesSearchBarWhenScrolling = false
+        searchController.searchBar.delegate = self
     }
     
     //MARK: - setupScrollView
@@ -284,14 +289,14 @@ private extension MainViewController {
 
 extension MainViewController {
     
-    func passProfileDataFromPresenterToViewController(profileModel: ModelProfile) {
-        let profileImageView = WebImageView()
-        profileImageView.set(imageUrl: profileModel.image)
-        profileImageView.image = profileImageView.image?.resized(to: CGSize(width: 40, height: 40))
-        profileImageView.contentMode = .scaleAspectFit
-        profileImageView.layer.cornerRadius = 20
-        profileImageView.layer.masksToBounds = true
-        navigationItem.rightBarButtonItem = UIBarButtonItem(customView: profileImageView)
+    public func passProfileDataFromPresenterToViewController(profileModel: ModelProfile) {
+        profileImageView.setProfileImage(imageUrl: profileModel.image) { [weak self] image in
+            DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.profileImageView.image = image.resized(to: CGSize(width: 40, height: 40))
+                self.navigationItem.rightBarButtonItem = UIBarButtonItem(customView: self.profileImageView)
+            }
+        }
     }
     
     public func passDataFromPresenterToViewController(model: ModelForTopView) {
@@ -302,10 +307,10 @@ extension MainViewController {
         descriptionOfWeather.text = "\(model.description)"
         windSpeedLabel.text = "\(model.weatherWindSpeed)"
         cityLabel.text = "\(model.cityLocation)"
-        imageViewOfCurrentWeatherInUpperView.set(imageUrl: model.iconURL)
+        imageViewOfCurrentWeatherInUpperView.setWeatherImage(imageUrl: model.iconURL)
         nightDayImageViewInUpperView.image = model.switchNightDay
         rainView.isHidden = model.switchRain
-
+        
         tableView.reloadData()
         collectionView.reloadData()
     }
@@ -329,6 +334,14 @@ extension MainViewController {
                 tableView.layoutIfNeeded()
             }
         }
+    }
+}
+
+//MARK: - extension UISearchBarDelegate
+
+extension MainViewController: UISearchBarDelegate {
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+        searchController.isActive = false
     }
 }
 

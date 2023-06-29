@@ -9,6 +9,7 @@ import Foundation
 import UIKit
 
 extension UISearchBar {
+    
     var textField: UITextField? {
         guard let text = self.value(forKey: "searchField") as? UITextField else {
             return nil

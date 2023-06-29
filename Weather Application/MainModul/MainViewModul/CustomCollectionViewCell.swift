@@ -9,7 +9,7 @@
 import UIKit
 import SnapKit
 
-class CustomCollectionViewCell: UICollectionViewCell {
+final class CustomCollectionViewCell: UICollectionViewCell {
     
     //MARK: - identifier
     
@@ -19,38 +19,27 @@ class CustomCollectionViewCell: UICollectionViewCell {
     
     //  MARK: - UI properties
     
-    let imageViewOfWeatherIcon = WebImageView()
-    let labelTime = UILabel()
-    let labelDeegree = UILabel()
+    private let imageViewOfWeatherIcon = WebImageView()
+    private let labelTime = UILabel()
+    private let labelDeegree = UILabel()
     
     //MARK: - Init
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        setup()
+        setupMethods()
     }
     
     required init?(coder: NSCoder) {
         fatalError()
     }
     
-    //MARK: - setup
-    
-    func setup() {
-        contentView.addSubview(imageViewOfWeatherIcon)
-        contentView.addSubview(labelTime)
-        contentView.addSubview(labelDeegree)
-        setupConstraints()
-        setupViews()
-    }
-    
     //MARK: - configureView
     
     public func configureView(_ model: ModelForCollectionView) {
-        
         labelDeegree.text = "\(model.temperature)"
         labelTime.text = getCurrentDateFromListOfTimes(dateInString: model.time).0
-        imageViewOfWeatherIcon.set(imageUrl: model.iconURL)
+        imageViewOfWeatherIcon.setWeatherImage(imageUrl: model.iconURL)
         if getCurrentTimeInChoosenCity(currentTimeZone: model.timeZone) == getCurrentDateFromListOfTimes(dateInString: model.time).1 {
             labelTime.text = "Сейчас"
         }
@@ -60,6 +49,16 @@ class CustomCollectionViewCell: UICollectionViewCell {
 //  MARK: - Private methods
 
 private extension CustomCollectionViewCell {
+    
+    //MARK: - setup
+    
+    func setupMethods() {
+        contentView.addSubview(imageViewOfWeatherIcon)
+        contentView.addSubview(labelTime)
+        contentView.addSubview(labelDeegree)
+        setupConstraints()
+        setupViews()
+    }
     
     //MARK: - setupConstraints
     

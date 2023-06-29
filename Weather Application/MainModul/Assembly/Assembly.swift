@@ -7,8 +7,9 @@
 
 import Foundation
 
-class Assembly {
-    func createViewController(view: MainViewControllerProtocol) {
+final class Assembly {
+    
+    public func createViewController(view: MainViewControllerProtocol) {
         let presenter = MainViewControllerPresenter()
         let interactor = MainViewControllerInteractor()
         interactor.presenter = presenter

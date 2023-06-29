@@ -12,7 +12,7 @@ protocol MainViewControllerInteractorProtocol {
     func providingVKontakteData()
 }
 
-class MainViewControllerInteractor: MainViewControllerInteractorProtocol {
+final class MainViewControllerInteractor: MainViewControllerInteractorProtocol {
     
     //    MARK: - Properties
     
@@ -21,9 +21,8 @@ class MainViewControllerInteractor: MainViewControllerInteractorProtocol {
     private let VKontakteNetwork = APIVKontakteManagerRequest()
     
     //MARK: - make request to VKontakteNetwork to get data and provide it to Presenter
-
-    func providingVKontakteData() {
-        
+    
+    public func providingVKontakteData() {
         VKontakteNetwork.getAuth { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
@@ -39,9 +38,8 @@ class MainViewControllerInteractor: MainViewControllerInteractorProtocol {
     }
     
     //MARK: - make request to WeatherManagerNetwork to get data and provide it to Presenter
-
-    func providingWeatherData(in inputedTextInSearchBar: String) {
-        
+    
+    public func providingWeatherData(in inputedTextInSearchBar: String) {
         weatherManagerNetwork.getWeather(coordinates: Coordinates(city: inputedTextInSearchBar)) { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }

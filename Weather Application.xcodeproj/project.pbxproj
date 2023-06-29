@@ -222,6 +222,7 @@
 		4A78FA1F29E0AB4A0014077A /* Helpers */ = {
 			isa = PBXGroup;
 			children = (
+				4A78FA3729E0AC9E0014077A /* LocationManager.swift */,
 				4A78FA2129E0AB680014077A /* ExtensionSearchBar.swift */,
 				4A78FA2329E0AB7C0014077A /* ExtensionUIImage.swift */,
 				4A78FA2529E0AB840014077A /* ExtensionSKView.swift */,
@@ -265,7 +266,6 @@
 				4A78FA3129E0AC3F0014077A /* PresenterMainViewController.swift */,
 				4A78FA3329E0AC570014077A /* CustomCollectionViewCell.swift */,
 				4A78FA3529E0AC820014077A /* CustomTableViewCell.swift */,
-				4A78FA3729E0AC9E0014077A /* LocationManager.swift */,
 			);
 			path = MainViewModul;
 			sourceTree = "<group>";

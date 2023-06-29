@@ -22,7 +22,6 @@ extension DataFetcherProtocol {
     //  MARK: - In this block getting URLRequest and URLSessionDataTask to make response(no matter which model will come)
     
     public func makeDataTask(urlRequest: URLRequest?, type: Decodable.Type, complitionHandler: @escaping(Result<Any>) -> Void) {
-        
         guard let request = urlRequest else {
             let error = NSError(domain: "Invalid URL", code: 522)
             complitionHandler(.failure(error))
@@ -42,7 +41,6 @@ extension DataFetcherProtocol {
     //  MARK: - In this block making data, response, error from network and JSONDecoder
     
     private func JSONDataTask(type: Decodable.Type, request: URLRequest, complition: @escaping (Any?, HTTPURLResponse?, Error?) -> Void) -> URLSessionDataTask {
-        
         let dataTask = URLSession.shared.dataTask(with: request) {  data, response, error in
             
             DispatchQueue.global().async {

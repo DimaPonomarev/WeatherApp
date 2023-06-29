@@ -14,7 +14,7 @@ struct APIVK {
     static let newsFeed = "/method/account.getProfileInfo"
 }
 
-final class APIVKontakteManagerRequest {
+final class APIVKontakteManagerRequest: DataFetcherProtocol {
     
     private let authService: VKAuthService
     
@@ -22,7 +22,14 @@ final class APIVKontakteManagerRequest {
         self.authService = authService
     }
     
-    private func makeURLRequest(path: String, params: [String : String]) -> URLRequest? {
+    public func getAuth(complition: @escaping (Result<Any>) -> Void) {
+        let allParams = ["filters": "post"]
+        makeDataTask(urlRequest: makeURLRequest(path: APIVK.newsFeed, params: allParams), type: APIVKontakteManager.self, complitionHandler: complition)}
+}
+
+private extension APIVKontakteManagerRequest {
+    
+    func makeURLRequest(path: String, params: [String : String]) -> URLRequest? {
         guard let token = authService.token else { return nil }
         var allParams = params
         allParams["access_token"] = token
@@ -32,7 +39,7 @@ final class APIVKontakteManagerRequest {
         return request
     }
     
-    private func makeURL(from path: String, params: [String: String]) -> URL {
+    func makeURL(from path: String, params: [String: String]) -> URL {
         var components = URLComponents()
         components.scheme = APIVK.scheme
         components.host = APIVK.host
@@ -40,12 +47,4 @@ final class APIVKontakteManagerRequest {
         components.queryItems = params.map {  URLQueryItem(name: $0, value: $1) }
         return components.url!
     }
-}
-extension APIVKontakteManagerRequest: DataFetcherProtocol {
-    
-    public func getAuth(complition: @escaping (Result<Any>) -> Void) {
-        let allParams = ["filters": "post"]
-        
-        makeDataTask(urlRequest: makeURLRequest(path: APIVK.newsFeed, params: allParams), type: APIVKontakteManager.self, complitionHandler: complition)}
-        
 }

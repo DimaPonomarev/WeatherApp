@@ -7,6 +7,7 @@
 
 import Foundation
 import UIKit
+import CoreLocation
 
 //MARK: - MainViewControllerPresenterProtocol
 
@@ -18,13 +19,12 @@ protocol MainViewControllerPresenterProtocol: AnyObject {
     func makeRequestToInteractorToProvideWeatherData(in specifiedCityEnteredInSearchBar: String)
     func responseFromInteractor(model: APIWeatherManager)
     func responseFromInteractorWithProfile(model: APIVKontakteManager)
-
     func getErrorFromInteractor(error: Error)
 }
 
 //MARK: - MainViewControllerPresenter
 
-class MainViewControllerPresenter: MainViewControllerPresenterProtocol {
+final class MainViewControllerPresenter: MainViewControllerPresenterProtocol {
     
     var interactor: MainViewControllerInteractorProtocol?
     weak var view: MainViewControllerProtocol?
@@ -56,27 +56,25 @@ class MainViewControllerPresenter: MainViewControllerPresenterProtocol {
     //MARK: - response from interactor and transfer ready to use models to MainViewController
     
     public func responseFromInteractor(model: APIWeatherManager) {
-        
         topViewModel = convertDataToTopViewModel(dataSource: model)
         tableViewModel = convertDataToTableViewModel(dataSource: model)
         collectionViewModel = convertDataToCollectionViewModel(dataSource: model)
         view?.passDataFromPresenterToViewController(model: topViewModel!)
     }
     
-    func responseFromInteractorWithProfile(model: APIVKontakteManager) {
-        let modelka = ModelProfile(image: model.response.photo200)
-        view?.passProfileDataFromPresenterToViewController(profileModel: modelka)
+    public func responseFromInteractorWithProfile(model: APIVKontakteManager) {
+        let profileModel = ModelProfile(image: model.response.photo200)
+        view?.passProfileDataFromPresenterToViewController(profileModel: profileModel)
     }
 }
-    
+
 //MARK: - extension to convert response from Interactor to needed to use models
 
 private extension MainViewControllerPresenter {
     
     //MARK: - convert response from interactor to model, used on topView of MainViewController
-
+    
     func convertDataToTopViewModel(dataSource: APIWeatherManager) -> ModelForTopView {
-        
         guard let todaysWeatherPerEachHour = dataSource.forecast.forecastday[0].hour.first(where: {
             $0.time == getCurrentLocalDate(in: dataSource.location) }) else {
             return ModelForTopView(temperature: 0,
@@ -103,9 +101,8 @@ private extension MainViewControllerPresenter {
     }
     
     //MARK: - convert response from interactor to model, used in CollectionView on MainViewController
-
+    
     func convertDataToCollectionViewModel(dataSource: APIWeatherManager?) -> [ModelForCollectionView] {
-        
         guard let model = dataSource else {
             return [ModelForCollectionView(time: "",
                                            tempC: 0,
@@ -128,7 +125,7 @@ private extension MainViewControllerPresenter {
     }
     
     //MARK: - convert response from interactor to model, used in TableView on MainViewController
-
+    
     func convertDataToTableViewModel(dataSource: APIWeatherManager?) -> [ModelForTableView] {
         guard let model = dataSource else { return [ModelForTableView(maxtempC: 0,
                                                                       mintempC: 0,
@@ -145,10 +142,8 @@ private extension MainViewControllerPresenter {
         return arrayOfTableViewModel
     }
     
-
-    
     //MARK: - getCurrentDate
-
+    
     func getCurrentLocalDate(in chosenLocation: APIWeatherManager.CurrentLocation) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm"
@@ -168,13 +163,11 @@ private extension MainViewControllerPresenter {
         self.locationManager.getPlace(for: exposedLocation) { [weak self] placemark in
             guard let self = self else { return }
             guard let placemark = placemark else { return }
-            var value = ""
             if let town = placemark.locality {
-                value = "\(town)"
+                var value = "\(town)"
                 value = value.replacingOccurrences(of: " ", with: "", options: NSString.CompareOptions.literal, range: nil)
                 self.makeRequestToInteractorToProvideWeatherData(in: value)
             }
         }
     }
 }
-

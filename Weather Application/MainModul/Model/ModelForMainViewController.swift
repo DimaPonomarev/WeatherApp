@@ -11,7 +11,6 @@ struct ModelProfile {
     let image: String
 }
 
-
 struct ModelForTopView {
     let temperature: Double
     let isDay: Int
@@ -26,7 +25,6 @@ struct ModelForTopView {
 }
 
 extension ModelForTopView {
-    
     var weatherTemprature: String { return "\(Int(temperature))˚C" }
     var weatherWindSpeed: String { return "Скорость ветра: \(Int(windSpeed)) м/c" }
     var weatherAppearentTemperature: String { return "Ощущается как: \(Int(apparentTemperature))˚C" }
@@ -46,6 +44,7 @@ extension ModelForTopView {
         }
     }
 }
+
 struct ModelForTableView {
     let maxtempC: Double
     let mintempC: Double
@@ -66,7 +65,6 @@ struct ModelForCollectionView {
     let tempC: Double
     var icon: String
     let timeZone: String
-    
 }
 
 extension ModelForCollectionView {

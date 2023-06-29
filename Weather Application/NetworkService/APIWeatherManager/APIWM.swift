@@ -19,32 +19,31 @@ struct  APIWM {
     }
 }
 
-
 struct Coordinates  {
     let city: String
 }
 
-final class APIWeatherManagerRequest {
+final class APIWeatherManagerRequest: DataFetcherProtocol {
     
-    private func makeURL(coordinates: Coordinates) -> URL? {
+    public func getWeather(coordinates:Coordinates, complition: @escaping ((Result<Any>) -> Void)) {
+        makeDataTask(urlRequest: makeURLRequest(coordinates: coordinates), type: APIWeatherManager.self, complitionHandler: complition)
+    }
+}
+
+private extension APIWeatherManagerRequest {
+    
+    func makeURL(coordinates: Coordinates) -> URL? {
         let urlString = "\(APIWM.baseURL)\(APIWM(city: coordinates.city).path)"
         let url = URL(string: urlString)
         return url
     }
     
-    private func makeURLRequest(coordinates: Coordinates) -> URLRequest? {
+    func makeURLRequest(coordinates: Coordinates) -> URLRequest? {
         guard let url = makeURL(coordinates: coordinates) else { return nil }
         let urlRequest = URLRequest(url: url)
         return urlRequest
     }
 }
-extension APIWeatherManagerRequest: DataFetcherProtocol {
-    
-    public func getWeather(coordinates:Coordinates, complition: @escaping ((Result<Any>) -> Void)) {
 
-        makeDataTask(urlRequest: makeURLRequest(coordinates: coordinates), type: APIWeatherManager.self, complitionHandler: complition)
-    }
-}
-        
 
 

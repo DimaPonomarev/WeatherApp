@@ -10,7 +10,7 @@ import CoreData
 
 protocol AppDelegateProtool {
     func openVKAuthViewController(_ viewController: UIViewController)
-    func openFeedViewController()
+    func openMainViewController()
     func openError()
 }
 
@@ -97,7 +97,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate, AuthServiceProtocol {
     }
     
     func authServiceSignIn() {
-        delegateAppDelegate.openFeedViewController()
+        delegateAppDelegate.openMainViewController()
     }
     
     func authServiceDidSignInFail() {

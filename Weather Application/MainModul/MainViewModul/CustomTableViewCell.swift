@@ -42,12 +42,11 @@ final class CustomTableViewCell: UITableViewCell {
     
     //MARK: - configureView
     
-    func configureView(_ model: ModelForTableView) {
-        
+    public func configureView(_ model: ModelForTableView) {
         dateLabel.text = getCurrentDate(dateInString: model.date).0
         maxTempLabel.text = "\(model.maxWeatherTemperature)"
         minTempLabel.text = "\(model.minWeatherTemperature)"
-        imageViewOfWeatherIcon.set(imageUrl: model.iconURL)
+        imageViewOfWeatherIcon.setWeatherImage(imageUrl: model.iconURL)
         if getCurrentDateInChoosenCity(currentTimeZone: model.timeZone) == getCurrentDate(dateInString: model.date).0  {
             visibleUIPropertiesOnFirstCell(visible: false)
         } else {
@@ -116,9 +115,6 @@ private extension CustomTableViewCell {
         dateLabel.font = .systemFont(ofSize: 16)
         dateLabel.textColor = .gray
         
-
-
-        
         maxTempLabel.adjustsFontSizeToFitWidth = true
         maxTempLabel.font = .systemFont(ofSize: 20)
         maxTempLabel.minimumScaleFactor = 0.1
@@ -162,7 +158,6 @@ private extension CustomTableViewCell {
     
     //  MARK: - makeFirstCell
     
-    
     private func visibleUIPropertiesOnFirstCell(visible: Bool) {
         weekDayLabel.isHidden = visible
         dayTemperature.isHidden = visible
@@ -171,7 +166,7 @@ private extension CustomTableViewCell {
         weekDayLabel.font = .systemFont(ofSize: 16)
         weekDayLabel.textColor = .darkGray
         weekDayLabel.text = "Сегодня"
-
+        
         dayTemperature.adjustsFontSizeToFitWidth = true
         dayTemperature.font = .systemFont(ofSize: 20)
         dayTemperature.text = "День"

@@ -9,6 +9,7 @@ import Foundation
 import SpriteKit
 
 extension SKView {
+    
  convenience init(withEmitter name: String) {
   self.init()
 

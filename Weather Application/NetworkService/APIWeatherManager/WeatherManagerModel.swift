@@ -17,15 +17,15 @@ struct APIWeatherManager: Decodable {
         var localtime: String
         let tzId: String
     }
-
+    
     struct ForecastDayWeather: Decodable {
         let forecastday: [WeatherInEachDay]
-
+        
         struct WeatherInEachDay: Decodable {
             let date: String
             let day: WeatherInEachDayAsAWhole
             let hour: [WeatherInEachHourInDay]
-
+            
             struct WeatherInEachDayAsAWhole: Decodable {
                 let maxtempC: Double
                 let mintempC: Double

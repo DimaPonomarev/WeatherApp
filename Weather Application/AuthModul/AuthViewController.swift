@@ -5,26 +5,32 @@
 //  Created by Дмитрий Пономарев on 24.06.2023.
 //
 
-import Foundation
+import UIKit
 import VK_ios_sdk
+import CoreLocation
 
-class AuthViewController: UIViewController, AppDelegateProtool {
-
+class AuthViewController: UIViewController {
     
-    var appde: AppDelegate!
-
-    let button = UIButton()
-    var authService: VKAuthService!
+    private var presenter: MainViewControllerPresenterProtocol?
+    
+    private var appde: AppDelegate!
+    private let locationManager = LocationManager()
+    private let button = UIButton()
+    private var authService: VKAuthService!
     
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .systemBlue
         view.addSubview(button)
         makeButton()
+        makeLocation()
         appde = UIApplication.shared.delegate as? AppDelegate
         appde?.delegateAppDelegate = self
         authService = AppDelegate.shared().authService
     }
+}
+
+private extension AuthViewController {
     
     func makeButton() {
         button.center = view.center
@@ -40,12 +46,22 @@ class AuthViewController: UIViewController, AppDelegateProtool {
     @objc func click() {
         authService.wakeUpSession()
     }
+}
+
+extension AuthViewController: CLLocationManagerDelegate {
+    
+    func makeLocation() {
+        locationManager.determineMyCurrentLocation()
+    }
+}
+
+extension AuthViewController: AppDelegateProtool {
     
     func openVKAuthViewController(_ viewController: UIViewController) {
         navigationController?.pushViewController(viewController, animated: true)
     }
     
-    func openFeedViewController() {
+    func openMainViewController() {
         let nextVC = MainViewController()
         navigationController?.pushViewController(nextVC, animated: true)
     }
@@ -61,8 +77,7 @@ class AuthViewController: UIViewController, AppDelegateProtool {
         alertController.addAction(cancel)
         present(alertController, animated: true)
     }
-    
-    
-    
 }
+
+
 
