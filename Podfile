@@ -7,6 +7,7 @@ target 'Weather Application' do
 
   # Pods for Weather Application
 pod 'SnapKit'
+pod "VK-ios-sdk"
 
   target 'Weather ApplicationTests' do
     inherit! :search_paths

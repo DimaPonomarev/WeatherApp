@@ -8,13 +8,26 @@
 import UIKit
 import CoreData
 
+protocol AppDelegateProtool {
+    func openVKAuthViewController(_ viewController: UIViewController)
+    func openMainViewController()
+    func openError()
+}
+
 @main
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, AuthServiceProtocol {
 
+    var authService: VKAuthService!
+    var delegateAppDelegate: AppDelegateProtool!
 
-
+    static func shared() -> AppDelegate {
+        return UIApplication.shared.delegate as! AppDelegate
+    }
+    
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        
+        self.authService = VKAuthService()
+        authService.delegate = self
         return true
     }
 
@@ -76,6 +89,20 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             }
         }
     }
-
+    
+    //    MARK: - AuthServiceDelegate
+    
+    func authServiceShouldShow(_ viewController: UIViewController) {
+        delegateAppDelegate.openVKAuthViewController(viewController)
+    }
+    
+    func authServiceSignIn() {
+        delegateAppDelegate.openMainViewController()
+    }
+    
+    func authServiceDidSignInFail() {
+        delegateAppDelegate.openError()
+    }
 }
+
 
